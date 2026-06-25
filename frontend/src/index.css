@@ -1,0 +1,88 @@
+@import 'tailwindcss';
+
+/* Fonts (Sora + Hanken Grotesk) are loaded via <link> in index.html. */
+
+/*
+ * Design tokens lifted from design-reference/Manual Assistant.dc.html.
+ * Tailwind v4 reads these via @theme — use them as utilities, e.g.
+ * `bg-base`, `text-accent`, `font-display`, `animate-fadeup`.
+ */
+@theme {
+  --color-base: #08090b;
+  --color-surface: #0f1115;
+
+  --color-accent: #6fb1ff;
+  --color-success: #6fdc9b;
+  --color-danger: #ef8a6b;
+
+  --color-ink: #eef1f5;
+  --color-ink-soft: #c4ccd4;
+  --color-muted: #8b939d;
+  --color-muted-2: #6c747d;
+  --color-faint: #5d646d;
+
+  --font-display: 'Sora', system-ui, sans-serif;
+  --font-sans: 'Hanken Grotesk', system-ui, sans-serif;
+
+  --animate-shimmer: ma-shimmer 1.3s linear infinite;
+  --animate-fadeup: ma-fadeup 0.5s ease both;
+  --animate-spin-slow: ma-spin 0.8s linear infinite;
+  --animate-blink: ma-blink 1.2s infinite;
+  --animate-glow: ma-glow 2.4s ease-in-out infinite;
+  --animate-sweep: ma-sweep 6s ease-in-out infinite;
+
+  @keyframes ma-shimmer {
+    0% { background-position: -160% 0; }
+    100% { background-position: 260% 0; }
+  }
+  @keyframes ma-fadeup {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes ma-spin {
+    to { transform: rotate(360deg); }
+  }
+  @keyframes ma-blink {
+    0%, 80%, 100% { opacity: 0.25; transform: translateY(0); }
+    40% { opacity: 1; transform: translateY(-3px); }
+  }
+  @keyframes ma-glow {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 0.95; }
+  }
+  @keyframes ma-sweep {
+    0% { transform: rotate(-118deg); }
+    50% { transform: rotate(118deg); }
+    100% { transform: rotate(-118deg); }
+  }
+}
+
+/* ── Global base ─────────────────────────────────────────────────────── */
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--color-base);
+}
+body {
+  font-family: var(--font-sans);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+}
+::selection {
+  background: rgba(111, 177, 255, 0.28);
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.09);
+  border-radius: 8px;
+}
+input {
+  font-family: inherit;
+}
