@@ -1,29 +1,54 @@
-"""Ingestion node — chunk, embed, build the vector index. Stub only; real
-PyMuPDF/pdfplumber extraction + chunking + Chroma indexing arrive in 2.4–2.5.
+"""Ingestion node — extract & chunk the fetched manuals (Phase 2.4).
 
-On success it emits the indexed manuals and a `complete` event, which is what
-flips the frontend from the progress screen into chat.
+Produces real, metadata-tagged chunks and reports real page/chunk counts. The
+chunks are embedded into the vector store in Phase 2.5; for now this proves the
+document-processing pipeline. On success it emits the indexed manuals and a
+`complete` event, which flips the frontend into chat.
 """
 
+import asyncio
+
 from app.agent.events import emit_complete, emit_manuals, emit_step
-from app.agent.pacing import step_pause
-from app.agent.state import AgentState
+from app.agent.state import AgentState, ManualRef
 from app.agent.steps import ACTIVE_DETAIL
+from app.rag.process import process_manuals
+from app.rag.store import embeddings_available, index_chunks
 
 
 async def ingest(state: AgentState) -> dict:
     car = state["car"]
-    manuals = state.get("selected", [])
+    fetched = state.get("fetched", [])
 
     emit_step("ingest", "active", ACTIVE_DETAIL["ingest"])
-    await step_pause()
-    emit_step("ingest", "done", "1,438 chunks embedded · index ready")
 
-    emit_manuals(manuals)
+    # PDF parsing/chunking and embedding are blocking — run off the event loop.
+    chunks, summaries = await asyncio.to_thread(process_manuals, car, fetched)
+    total_pages = sum(s.pages for s in summaries)
+
+    if embeddings_available():
+        try:
+            embedded = await asyncio.to_thread(index_chunks, car, chunks)
+            detail = f"{embedded:,} chunks embedded across {total_pages} pages · index ready"
+        except Exception as exc:
+            # Embedding failure (bad model/quota) shouldn't fail the whole run —
+            # chat will fall back to general-knowledge answers.
+            detail = (
+                f"{len(chunks):,} chunks extracted · "
+                f"embedding unavailable ({type(exc).__name__})"
+            )
+    else:
+        detail = (
+            f"{len(chunks):,} chunks from {total_pages} pages "
+            "(embedding disabled — set GOOGLE_API_KEY)"
+        )
+
+    emit_step("ingest", "done", detail)
+    emit_manuals([ManualRef(name=s.name, meta=s.meta) for s in summaries])
+
     greeting = (
         f"Your {car.make} {car.model} ({car.year}) is indexed and ready. "
         "I've read the Owner's and Workshop manuals — ask me anything about "
         "maintenance, fluids, warning lights or repair procedures."
     )
     emit_complete(greeting)
-    return {"chunk_count": 1438, "greeting": greeting}
+    return {"chunk_count": len(chunks)}

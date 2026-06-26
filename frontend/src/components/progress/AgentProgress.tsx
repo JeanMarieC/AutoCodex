@@ -1,4 +1,5 @@
 import type { ManualRef, PipelineStep as Step } from '@/types';
+import UploadDropzone from '@/components/UploadDropzone';
 import PipelineStep from './PipelineStep';
 import ManualsIndexed from './ManualsIndexed';
 
@@ -7,6 +8,7 @@ interface AgentProgressProps {
   manuals: ManualRef[];
   onRetry: () => void;
   onResetCar: () => void;
+  onUpload: (file: File) => Promise<void>;
 }
 
 export default function AgentProgress({
@@ -14,6 +16,7 @@ export default function AgentProgress({
   manuals,
   onRetry,
   onResetCar,
+  onUpload,
 }: AgentProgressProps) {
   const doneCount = steps.filter((s) => s.status === 'done').length;
   const failed = steps.some((s) => s.status === 'failed');
@@ -51,6 +54,15 @@ export default function AgentProgress({
       ))}
 
       {allDone && manuals.length > 0 && <ManualsIndexed manuals={manuals} />}
+
+      {failed && (
+        <div className="mt-1 border-t border-white/[0.07] pt-4">
+          <p className="mb-1 text-[12.5px] text-muted">
+            Couldn't find a manual automatically — upload your own PDF to continue:
+          </p>
+          <UploadDropzone onUpload={onUpload} />
+        </div>
+      )}
     </div>
   );
 }

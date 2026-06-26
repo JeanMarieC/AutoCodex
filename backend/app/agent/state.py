@@ -20,6 +20,14 @@ class Car(BaseModel):
     def label(self) -> str:
         return f"{self.make} {self.model} · {self.year}"
 
+    @property
+    def id(self) -> str:
+        """Stable slug used for collections, folders and chunk metadata."""
+        import re
+
+        raw = f"{self.make}-{self.model}-{self.year}".lower()
+        return re.sub(r"[^a-z0-9]+", "-", raw).strip("-")
+
 
 class ManualRef(BaseModel):
     name: str
@@ -31,14 +39,14 @@ class AgentState(TypedDict, total=False):
 
     car: Car
 
-    # Search → Validation
-    candidates: list[dict]          # raw search hits (stub)
-    selected: list[ManualRef]       # manuals that passed validation
+    # Search → Validation  (dicts: tool models serialized via .model_dump())
+    candidates: list[dict]          # Candidate hits from search
+    selected: list[dict]            # SelectedManual entries that passed validation
     retries: int                    # validation retry counter
 
     # Fetch → Ingestion
-    fetched: list[dict]             # downloaded files (stub)
-    chunk_count: int                # chunks embedded (stub)
+    fetched: list[dict]             # FetchedManual download results
+    chunk_count: int                # chunks embedded (stub until 2.4)
 
     # Outcome
     failed: bool

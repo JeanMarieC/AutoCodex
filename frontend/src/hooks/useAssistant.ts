@@ -12,6 +12,7 @@ import {
   streamIngestion,
   type ExampleCar,
 } from '@/api/endpoints';
+import { uploadManual as uploadManualApi } from '@/api/manuals';
 import type { Car, ChatMessage, ManualRef, PipelineStep, StreamHandle } from '@/types';
 
 export type Phase = 'input' | 'progress' | 'chat';
@@ -123,6 +124,30 @@ export function useAssistant() {
     setYear(ex.year);
   }, []);
 
+  // Upload a user-supplied PDF. Used on the hero (always available) and when
+  // the agent couldn't fetch a manual. Indexes it, then drops into chat.
+  const uploadManual = useCallback(
+    async (file: File) => {
+      const target: Car = car ?? {
+        make: make.trim() || 'Mercedes-Benz',
+        model: model.trim() || 'C200',
+        year: year.trim() || '1998',
+      };
+      setMake(target.make);
+      setModel(target.model);
+      setYear(target.year);
+      setCar(target);
+      streamRef.current?.cancel();
+
+      const res = await uploadManualApi(target, file);
+      setManuals((prev) => [...prev, { name: res.name, meta: res.meta }]);
+      setMessages([{ role: 'assistant', text: res.greeting, citations: null }]);
+      setFailed(false);
+      setPhase('chat');
+    },
+    [car, make, model, year],
+  );
+
   const ask = useCallback(
     (text: string) => {
       const t = text.trim();
@@ -156,6 +181,7 @@ export function useAssistant() {
     retry,
     resetCar,
     fillExample,
+    uploadManual,
     messages,
     draft,
     setDraft,

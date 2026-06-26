@@ -14,6 +14,7 @@ import type {
   StreamHandle,
   StreamHandlers,
 } from '@/types';
+import { getToken } from '@/auth/token';
 import { BASE_URL, apiPost } from './client';
 import {
   EXAMPLES,
@@ -57,6 +58,9 @@ export function streamIngestion(
     year: car.year,
   });
   if (opts.fromStep != null) params.set('from_step', String(opts.fromStep));
+  // EventSource can't send headers, so pass the JWT in the query string.
+  const token = getToken();
+  if (token) params.set('token', token);
   const source = new EventSource(`${BASE_URL}/agent/stream?${params.toString()}`);
 
   source.onmessage = (e) => {

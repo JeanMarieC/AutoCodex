@@ -1,5 +1,6 @@
 import { ArrowIcon } from '@/components/icons';
 import type { ExampleCar } from '@/api/endpoints';
+import UploadDropzone from '@/components/UploadDropzone';
 import ExampleChips from './ExampleChips';
 
 interface HeroInputProps {
@@ -11,6 +12,7 @@ interface HeroInputProps {
   onYear: (v: string) => void;
   onSubmit: () => void;
   onPickExample: (ex: ExampleCar) => void;
+  onUpload: (file: File) => Promise<void>;
 }
 
 const FIELD_CLASS =
@@ -94,6 +96,7 @@ export default function HeroInput({
   onYear,
   onSubmit,
   onPickExample,
+  onUpload,
 }: HeroInputProps) {
   const submitOnEnter = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') onSubmit();
@@ -172,6 +175,10 @@ export default function HeroInput({
       </div>
 
       <ExampleChips onPick={onPickExample} />
+
+      <div className="mt-3 flex flex-wrap items-center justify-center gap-[10px]">
+        <UploadDropzone onUpload={onUpload} compact />
+      </div>
     </div>
   );
 }
