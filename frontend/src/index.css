@@ -86,3 +86,53 @@ body {
 input {
   font-family: inherit;
 }
+
+/* ── Component classes (exact gradients / focus / hover from the design) ── */
+
+/* Dark text field with the blue focus ring. Layout/bg set per-instance. */
+.ma-field {
+  color: #f2f5f8;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+.ma-field::placeholder {
+  color: #6f7780;
+}
+.ma-field:focus {
+  outline: none;
+  border-color: rgba(111, 177, 255, 0.5);
+  box-shadow: 0 0 0 3px rgba(111, 177, 255, 0.14);
+}
+
+/* Pill chip hover (examples, suggestions, citations, "change car"). */
+.ma-chip {
+  transition: all 0.18s;
+}
+.ma-chip:hover {
+  border-color: rgba(111, 177, 255, 0.45);
+  color: #cfe2ff;
+  background: rgba(111, 177, 255, 0.08);
+}
+
+/* Primary call-to-action button. */
+.ma-cta {
+  background: linear-gradient(180deg, #bcd9ff, #8fbcff);
+  box-shadow: 0 10px 30px -10px rgba(111, 177, 255, 0.6);
+  transition: all 0.18s;
+}
+.ma-cta:hover {
+  background: linear-gradient(180deg, #cfe6ff, #a6caff);
+  box-shadow: 0 14px 36px -10px rgba(111, 177, 255, 0.75);
+  transform: translateY(-1px);
+}
+
+/* Chat send button. */
+.ma-send {
+  background: linear-gradient(180deg, #bcd9ff, #8fbcff);
+  box-shadow: 0 8px 22px -10px rgba(111, 177, 255, 0.6);
+  transition: all 0.18s;
+}
+.ma-send:hover {
+  background: linear-gradient(180deg, #cfe6ff, #a6caff);
+  transform: translateY(-1px);
+}

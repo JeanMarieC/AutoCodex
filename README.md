@@ -21,17 +21,16 @@ the source pages.
 ```
 
 The 5 agent steps stream to the UI over SSE and render as a live progress
-pipeline (see `car-manual-rag-assistant-ui/` — the Claude Design reference).
+pipeline. The UI was built from a Claude Design handoff and lives in `frontend/`.
 
 ## Repo layout
 
 ```
 .
-├── frontend/                     Vite + React + TS + Tailwind v4
-├── backend/                      Python 3.11 + FastAPI (managed by uv)
-├── car-manual-rag-assistant-ui/  Claude Design handoff bundle (reference only)
-├── docker-compose.yml            api + web + Postgres + Chroma (Phase 3)
-├── .env.example                  root env (docker-compose)
+├── frontend/             Vite + React + TS + Tailwind v4
+├── backend/              Python 3.11 + FastAPI (managed by uv)
+├── docker-compose.yml    api + web + Postgres + Chroma (Phase 3)
+├── .env.example          root env (docker-compose)
 └── .gitignore
 ```
 

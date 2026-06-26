@@ -3,7 +3,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import health
+from app.api.routes import agent, chat, health
 from app.config import get_settings
 
 settings = get_settings()
@@ -22,8 +22,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Routers. More mounted per Phase 2 sub-phase: cars, agent (SSE), chat.
+# Routers. More mounted per Phase 2 sub-phase: cars, persistence.
 app.include_router(health.router, prefix="/api")
+app.include_router(agent.router, prefix="/api")
+app.include_router(chat.router, prefix="/api")
 
 
 @app.get("/api")

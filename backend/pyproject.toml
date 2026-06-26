@@ -10,10 +10,13 @@ dependencies = [
     "pydantic>=2.9",
     "pydantic-settings>=2.6",
     "python-dotenv>=1.0",
+    # 2.1 orchestration
+    "langgraph>=0.2.50",
+    "langchain-core>=0.3",
+    "sse-starlette>=2.1",
 ]
 
-# Phase 2 dependencies (added per sub-phase as we wire each layer):
-#   2.1 orchestration   langgraph, langchain-core
+# Remaining Phase 2 dependencies (added per sub-phase as we wire each layer):
 #   2.2 llm             anthropic, langchain-anthropic
 #   2.3 search/fetch    tavily-python, httpx
 #   2.4 doc processing  pymupdf, pdfplumber, langchain-text-splitters

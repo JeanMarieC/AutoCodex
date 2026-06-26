@@ -1,0 +1,42 @@
+# ── Python / backend ─────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# Local data stores
+*.db
+*.sqlite3
+.chroma/
+backend/.chroma/
+data/
+
+# ── Node / frontend ──────────────────────────────────────────────────
+node_modules/
+dist/
+dist-ssr/
+.vite/
+*.local
+
+# ── Env & secrets ────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+**/.env
+!**/.env.example
+
+# ── Editor / OS ──────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Logs
+*.log
+npm-debug.log*
