@@ -45,21 +45,16 @@ def test_chunk_pages_tags_metadata(tmp_path):
     assert md["car_id"] == CAR.id and md["manual_name"] == "Workshop Manual"
 
 
-def test_process_manuals_falls_back_to_sample():
-    # path=None → orchestrator generates a sample PDF and still produces chunks.
+def test_process_manuals_skips_unfetched():
+    # No real file → skipped entirely (never fabricates a sample manual).
     fetched = [
         {"name": "Owner's Manual", "kind": "owner", "url": "x", "source": "manualslib",
          "ok": True, "path": None},
         {"name": "Workshop Manual", "kind": "workshop", "url": "y", "source": "archive",
-         "ok": True, "path": None},
+         "ok": False, "path": None},
     ]
     chunks, summaries = process_manuals(CAR, fetched)
-
-    assert len(summaries) == 2
-    assert all(s.pages > 0 and s.chunk_count > 0 for s in summaries)
-    assert len(chunks) == sum(s.chunk_count for s in summaries)
-    assert {c.manual_type for c in chunks} == {"owner", "workshop"}
-    assert "pp ·" in summaries[0].meta
+    assert chunks == [] and summaries == []
 
 
 def test_process_manuals_reads_real_pdf(tmp_path):

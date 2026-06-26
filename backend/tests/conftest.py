@@ -15,6 +15,7 @@ from pathlib import Path
 os.environ["LLM_PROVIDER"] = "gemini"
 os.environ["GOOGLE_API_KEY"] = ""
 os.environ["TAVILY_API_KEY"] = ""
+os.environ["ARCHIVE_SEARCH_ENABLED"] = "false"  # no network during tests
 # Keep generated sample PDFs out of the project tree.
 os.environ["MANUALS_DIR"] = tempfile.mkdtemp(prefix="carassistant-test-manuals-")
 # Isolated throwaway SQLite database for the test session.

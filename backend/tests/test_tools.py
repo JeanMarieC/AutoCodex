@@ -83,6 +83,19 @@ def test_select_empty_candidates_is_insufficient():
     assert selected == [] and sufficient is False
 
 
+def test_select_takes_top_n_relevant():
+    # Many relevant candidates → select several (capped at max_manuals), deduped.
+    cands = [
+        Candidate(title=f"Mercedes C200 manual #{i}", url=f"https://archive.org/x{i}.pdf",
+                  source="archive", score=0.8)
+        for i in range(10)
+    ]
+    selected, sufficient = select_manuals(CAR, cands)
+    assert sufficient
+    assert 2 < len(selected) <= get_settings().max_manuals
+    assert len({m.url for m in selected}) == len(selected)  # no dup URLs
+
+
 # ── fetch (download + validation) ────────────────────────────────────
 
 
@@ -134,6 +147,54 @@ async def test_fetch_rejects_non_pdf(monkeypatch, tmp_path):
     assert "not a PDF" in (result.error or "")
 
 
-def test_simulated_fetch_is_ok_without_network():
+def test_simulated_fetch_downloads_nothing():
+    # Offline mode downloads nothing (so the pipeline fails rather than faking).
     result = simulated_fetch(MANUAL)
-    assert result.ok and result.path is None
+    assert result.ok is False and result.path is None
+
+
+async def test_fetch_resolves_archive_details_to_pdf(monkeypatch, tmp_path):
+    """An archive.org /details/ URL is resolved via the metadata API to a PDF."""
+    monkeypatch.setattr(get_settings(), "manuals_dir", str(tmp_path))
+
+    class _Resp:
+        def __init__(self, url):
+            if "/metadata/" in url:
+                self._json = {
+                    "files": [{"name": "manual.pdf", "format": "Text PDF", "size": "1000"}]
+                }
+                self.content = b""
+                self.headers = {"content-type": "application/json"}
+            else:  # /download/ → the actual PDF
+                self._json = {}
+                self.content = b"%PDF-1.7 archive bytes"
+                self.headers = {"content-type": "application/pdf"}
+
+        def json(self):
+            return self._json
+
+        def raise_for_status(self):
+            pass
+
+    class _Client:
+        def __init__(self, **kwargs):
+            pass
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *exc):
+            return False
+
+        async def get(self, url):
+            return _Resp(url)
+
+    monkeypatch.setattr(httpx, "AsyncClient", _Client)
+
+    manual = SelectedManual(
+        name="Owner's Manual", kind="owner",
+        url="https://archive.org/details/some-car-manual", source="archive", meta="x",
+    )
+    result = await fetch_manual(manual, "merc-c200-1998")
+    assert result.ok and result.path is not None
+    assert result.size_bytes and result.size_bytes > 0

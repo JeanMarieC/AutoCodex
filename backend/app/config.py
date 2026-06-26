@@ -29,8 +29,10 @@ class Settings(BaseSettings):
     ollama_embed_model: str = "nomic-embed-text"
     # Phase 2.3 — search & fetch
     tavily_api_key: str | None = None
+    archive_search_enabled: bool = True   # Archive.org search API (free, no key)
     manuals_dir: str = "./.data/manuals"  # where fetched PDFs are saved
-    fetch_timeout_seconds: float = 30.0
+    fetch_timeout_seconds: float = 45.0
+    max_manuals: int = 6                  # how many relevant manuals to fetch/index
 
     # Phase 2.4 — document processing
     chunk_size: int = 1000
@@ -38,7 +40,7 @@ class Settings(BaseSettings):
     # Phase 2.5 — embeddings / vector store (Gemini embeddings, free, same key)
     chroma_dir: str = "./.chroma"
     embedding_model: str = "models/gemini-embedding-001"
-    retrieval_k: int = 5
+    retrieval_k: int = 6  # chunks retrieved per question (across all indexed manuals)
     # Phase 2.6 — persistence (SQLite locally, Postgres in Docker)
     database_url: str = "sqlite:///./carassistant.db"
 

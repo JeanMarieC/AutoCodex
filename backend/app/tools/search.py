@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from urllib.parse import urlparse
 
+import httpx
 from tavily import AsyncTavilyClient
 
 from app.agent.state import Car
@@ -17,6 +18,7 @@ from app.config import get_settings
 from app.tools.models import Candidate, Source
 
 INCLUDE_DOMAINS = ["manualslib.com", "archive.org"]
+_UA = "Mozilla/5.0 (compatible; ManualAI/1.0)"
 
 # Vehicles with no manual in our (stub) corpus — keeps the keyless demo's
 # failure path working. Ignored once real search is enabled.
@@ -25,6 +27,49 @@ _STUB_NO_MANUAL = ("hilux",)
 
 def tavily_available() -> bool:
     return bool(get_settings().tavily_api_key)
+
+
+def _archive_enabled() -> bool:
+    return get_settings().archive_search_enabled
+
+
+async def _search_archive(car: Car) -> list[Candidate]:
+    """Query Archive.org's free search API directly for the vehicle's manual."""
+    query = f'({car.make} {car.model} manual) AND mediatype:texts'
+    params = [
+        ("q", query),
+        ("fl[]", "identifier"),
+        ("fl[]", "title"),
+        ("rows", "15"),
+        ("output", "json"),
+    ]
+    async with httpx.AsyncClient(timeout=20, headers={"User-Agent": _UA}) as client:
+        res = await client.get(
+            "https://archive.org/advancedsearch.php", params=params  # type: ignore[arg-type]
+        )
+        docs = res.json().get("response", {}).get("docs", [])
+
+    make_l, model_l = car.make.lower(), car.model.lower()
+    out: list[Candidate] = []
+    for d in docs:
+        ident = d.get("identifier")
+        if not ident:
+            continue
+        raw_title = d.get("title") or ident
+        title = raw_title if isinstance(raw_title, str) else " ".join(map(str, raw_title))
+        # Relevance filter — keep results that actually name the make or model.
+        if make_l not in title.lower() and model_l not in title.lower():
+            continue
+        out.append(
+            Candidate(
+                title=title[:200],
+                url=f"https://archive.org/details/{ident}",
+                source="archive",
+                snippet="Archive.org",
+                score=0.7,
+            )
+        )
+    return out
 
 
 def _source_of(url: str) -> Source:
@@ -88,12 +133,35 @@ def _stub_candidates(car: Car) -> list[Candidate]:
 
 
 async def search_manuals(car: Car) -> list[Candidate]:
-    """Return ranked candidate manuals for a vehicle."""
-    if not tavily_available():
+    """Return candidate manuals, combining Archive.org (free) + Tavily (if keyed).
+
+    Archive.org results are real, downloadable PDFs and need no key. Tavily adds
+    ManualsLib coverage when a key is present. Falls back to stub candidates only
+    when neither source returns anything.
+    """
+    results: list[Candidate] = []
+
+    if _archive_enabled():
+        try:
+            results += await _search_archive(car)
+        except Exception:
+            pass
+
+    if tavily_available():
+        try:
+            results += await _search_tavily(car)
+        except Exception:
+            pass
+
+    if not results:
         return _stub_candidates(car)
-    try:
-        results = await _search_tavily(car)
-        return results or _stub_candidates(car)
-    except Exception:
-        # Network/quota failure shouldn't break ingestion — degrade to stubs.
-        return _stub_candidates(car)
+
+    # De-duplicate by URL, preserving order (archive-first).
+    seen: set[str] = set()
+    unique: list[Candidate] = []
+    for c in results:
+        if c.url in seen:
+            continue
+        seen.add(c.url)
+        unique.append(c)
+    return unique

@@ -28,6 +28,11 @@ def _route_after_validate(state: AgentState) -> str:
     return "retry"
 
 
+def _route_after_fetch(state: AgentState) -> str:
+    # No real PDF downloaded → end (the UI shows the upload prompt).
+    return "give_up" if state.get("failed") else "ingest"
+
+
 def build_graph() -> CompiledStateGraph:
     builder = StateGraph(AgentState)
     builder.add_node("parse", parse)
@@ -44,7 +49,11 @@ def build_graph() -> CompiledStateGraph:
         _route_after_validate,
         {"proceed": "fetch", "retry": "search", "give_up": END},
     )
-    builder.add_edge("fetch", "ingest")
+    builder.add_conditional_edges(
+        "fetch",
+        _route_after_fetch,
+        {"ingest": "ingest", "give_up": END},
+    )
     builder.add_edge("ingest", END)
 
     return builder.compile()
