@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import agent, auth, cars, chat, health, manuals
+from app.api.routes import agent, auth, cars, chat, health, manuals, vision
 from app.config import get_settings
 from app.db.session import init_db
 
@@ -39,6 +39,7 @@ app.include_router(agent.router, prefix="/api")
 app.include_router(chat.router, prefix="/api")
 app.include_router(cars.router, prefix="/api")
 app.include_router(manuals.router, prefix="/api")
+app.include_router(vision.router, prefix="/api")
 
 
 @app.get("/api")

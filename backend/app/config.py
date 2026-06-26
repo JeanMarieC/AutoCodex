@@ -27,6 +27,8 @@ class Settings(BaseSettings):
     ollama_base_url: str = "http://localhost:11434"
     ollama_chat_model: str = "mistral"
     ollama_embed_model: str = "nomic-embed-text"
+    # Computer vision — dashboard warning-light identification (local VLM)
+    vision_model: str = "qwen2.5vl:7b"
     # Phase 2.3 — search & fetch
     tavily_api_key: str | None = None
     archive_search_enabled: bool = True   # Archive.org search API (free, no key)

@@ -64,6 +64,7 @@ export default function App() {
             onDraft={a.setDraft}
             onSend={a.send}
             onAsk={a.ask}
+            onPhoto={a.analyzeDashboard}
           />
         )}
       </div>

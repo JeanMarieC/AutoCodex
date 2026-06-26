@@ -12,6 +12,7 @@ interface ChatPanelProps {
   onDraft: (v: string) => void;
   onSend: () => void;
   onAsk: (q: string) => void;
+  onPhoto: (file: File) => void;
 }
 
 export default function ChatPanel({
@@ -21,6 +22,7 @@ export default function ChatPanel({
   onDraft,
   onSend,
   onAsk,
+  onPhoto,
 }: ChatPanelProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -45,7 +47,7 @@ export default function ChatPanel({
 
         <div className="border-t border-white/[0.07] bg-black/20 px-4 py-[14px]">
           {!typing && <Suggestions onAsk={onAsk} />}
-          <ChatInput draft={draft} onDraft={onDraft} onSend={onSend} />
+          <ChatInput draft={draft} onDraft={onDraft} onSend={onSend} onPhoto={onPhoto} />
         </div>
       </div>
       <p className="mx-0 mt-[14px] text-center text-[11.5px] text-[#4d545c]">

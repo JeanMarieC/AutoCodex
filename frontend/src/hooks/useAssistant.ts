@@ -13,6 +13,7 @@ import {
   type ExampleCar,
 } from '@/api/endpoints';
 import { uploadManual as uploadManualApi } from '@/api/manuals';
+import { analyzeDashboard as analyzeDashboardApi } from '@/api/vision';
 import type { Car, ChatMessage, ManualRef, PipelineStep, StreamHandle } from '@/types';
 
 export type Phase = 'input' | 'progress' | 'chat';
@@ -165,6 +166,38 @@ export function useAssistant() {
 
   const send = useCallback(() => ask(draft), [ask, draft]);
 
+  // Snap a dashboard photo → VLM identifies the light → grounded answer.
+  const analyzeDashboard = useCallback(
+    async (file: File) => {
+      if (!car || typing) return;
+      setMessages((prev) => [...prev, { role: 'user', text: '📷 Dashboard photo', citations: null }]);
+      setTyping(true);
+      try {
+        const res = await analyzeDashboardApi(car, file);
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: 'assistant',
+            text: `Detected: ${res.identification}\n\n${res.text}`,
+            citations: res.citations ?? null,
+          },
+        ]);
+      } catch {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: 'assistant',
+            text: "I couldn't read that photo. Make sure the vision model is running, then try a clear, well-lit shot of the dashboard.",
+            citations: null,
+          },
+        ]);
+      } finally {
+        setTyping(false);
+      }
+    },
+    [car, typing],
+  );
+
   return {
     phase,
     make,
@@ -188,6 +221,7 @@ export function useAssistant() {
     typing,
     ask,
     send,
+    analyzeDashboard,
   };
 }
 
