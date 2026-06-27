@@ -1,4 +1,4 @@
-# Manual.ai — Agentic Car-Manual RAG Assistant
+# AutoCodex — Agentic Car-Manual RAG Assistant
 
 Add a car to your garage and an autonomous agent finds, fetches and indexes its
 official manuals (owner's + workshop), then becomes a RAG chatbot that answers

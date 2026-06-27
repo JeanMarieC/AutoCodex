@@ -23,7 +23,7 @@ export default function Header({
           <div className="h-[13px] w-[13px] rotate-[35deg] rounded-full border-2 border-accent border-t-transparent" />
         </div>
         <span className="font-display text-[13px] font-semibold uppercase tracking-[0.14em] text-[#e7eaee]">
-          Manual<span className="text-accent">.ai</span>
+          Auto<span className="text-accent">Codex</span>
         </span>
       </div>
 

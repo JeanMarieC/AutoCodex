@@ -43,7 +43,7 @@ class GroundedAnswer(BaseModel):
 
 def _system_prompt(car: Car, context: list[ContextChunk]) -> str:
     base = (
-        f"You are Manual.ai, an expert assistant for a {car.make} {car.model} "
+        f"You are AutoCodex, an expert assistant for a {car.make} {car.model} "
         f"({car.year}). Answer the owner's maintenance and repair questions "
         "clearly and practically."
     )

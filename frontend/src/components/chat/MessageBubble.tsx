@@ -16,10 +16,10 @@ export default function MessageBubble({ message }: { message: ChatMessage }) {
         {isAssistant && (
           <div className="mb-[9px] flex items-center gap-2">
             <span className="flex h-5 w-5 items-center justify-center rounded-[6px] bg-gradient-to-br from-accent to-[#3f6fae] font-display text-[11px] font-extrabold text-[#06121f]">
-              M
+              A
             </span>
             <span className="text-[10.5px] font-bold uppercase tracking-[0.1em] text-[#6c747d]">
-              Manual.ai
+              AutoCodex
             </span>
           </div>
         )}
