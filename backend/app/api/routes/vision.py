@@ -55,6 +55,17 @@ async def dashboard(
             detail="Vision model unavailable — is Ollama running with the model pulled?",
         ) from None
 
+    # No light detected → don't run RAG with a contradictory prompt.
+    if "no warning light" in identification.lower():
+        return DashboardResponse(
+            identification=identification,
+            text=(
+                "I couldn't make out a warning light in that photo. Try a closer, "
+                "well-lit shot of the lit symbol on your instrument cluster."
+            ),
+            citations=None,
+        )
+
     question = (
         f"My dashboard is showing this warning light: {identification}. "
         "What does it mean, how serious is it, and what should I do?"

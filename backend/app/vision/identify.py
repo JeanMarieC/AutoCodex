@@ -12,10 +12,12 @@ from ollama import AsyncClient
 from app.config import get_settings
 
 _PROMPT = (
-    "This is a photo of a car's dashboard / instrument cluster. Identify the "
-    "warning or indicator light(s) that are ON. For each, give its common name, "
-    "colour, and the symbol it shows (e.g. 'red coolant-temperature light — "
-    "thermometer in liquid'). If no warning light is clearly illuminated, say "
+    "This image shows either a car's dashboard / instrument cluster, or a "
+    "close-up of a single car warning/indicator symbol (it may be a photo, "
+    "drawing or icon). Identify the warning or indicator light(s) shown. For "
+    "each, give its common name, colour, and the symbol (e.g. 'red battery / "
+    "charging-system light — battery with + and − terminals'). Only if the image "
+    "clearly contains no automotive warning symbol at all, reply exactly: "
     "'No warning light is clearly visible.' Be concise — one or two sentences, "
     "no preamble."
 )
