@@ -4,13 +4,23 @@ Uses a generated sample PDF as the input fixture, so tests are self-contained
 and offline.
 """
 
+import pymupdf
+
 from app.agent.state import Car
+from app.config import get_settings
 from app.rag.chunk import chunk_pages
 from app.rag.extract import extract_pages
 from app.rag.process import process_manuals
 from app.rag.sample import generate_sample_pdf
 
 CAR = Car(make="Mercedes-Benz", model="C200", year="1998")
+
+
+def _relax_quality_gate(monkeypatch):
+    """Let the small sample PDFs through the size gate for pipeline tests."""
+    s = get_settings()
+    monkeypatch.setattr(s, "min_manual_pages", 1)
+    monkeypatch.setattr(s, "min_manual_chars", 1)
 
 
 def test_extract_pages_with_sections(tmp_path):
@@ -57,7 +67,8 @@ def test_process_manuals_skips_unfetched():
     assert chunks == [] and summaries == []
 
 
-def test_process_manuals_reads_real_pdf(tmp_path):
+def test_process_manuals_reads_real_pdf(tmp_path, monkeypatch):
+    _relax_quality_gate(monkeypatch)
     pdf = generate_sample_pdf(tmp_path / "real.pdf", CAR, "Owner's Manual", "owner")
     fetched = [
         {"name": "Owner's Manual", "kind": "owner", "url": "x", "source": "archive",
@@ -65,3 +76,20 @@ def test_process_manuals_reads_real_pdf(tmp_path):
     ]
     chunks, summaries = process_manuals(CAR, fetched)
     assert summaries[0].pages == 4 and chunks
+
+
+def test_process_manuals_drops_stub_pdf(tmp_path):
+    """A tiny 1-page 'manual' (e.g. an Archive.org catalog page) is discarded by
+    the quality gate so its non-manual text never reaches the index."""
+    stub = tmp_path / "stub.pdf"
+    doc = pymupdf.open()
+    doc.new_page().insert_text((72, 72), "Civic catalog listing — see details.")
+    doc.save(str(stub))
+    doc.close()
+
+    fetched = [
+        {"name": "Owner's Manual", "kind": "owner", "url": "x", "source": "archive",
+         "ok": True, "path": str(stub)},
+    ]
+    chunks, summaries = process_manuals(CAR, fetched)
+    assert chunks == [] and summaries == []

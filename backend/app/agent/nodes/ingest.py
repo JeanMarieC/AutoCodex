@@ -15,8 +15,8 @@ from app.rag.process import process_manuals
 from app.rag.store import embeddings_available, index_chunks
 
 _NO_TEXT = (
-    "The downloaded manual had no extractable text (it may be a scanned image). "
-    "Upload a text-based PDF to continue."
+    "Couldn't get a usable manual for this vehicle automatically — our sources "
+    "only returned stub or image-only PDFs. Upload the owner's manual PDF to continue."
 )
 
 

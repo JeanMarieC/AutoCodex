@@ -37,6 +37,22 @@ def _classify(title: str) -> ManualKind:
     return "unknown"
 
 
+def _year_score(car: Car, title: str) -> float:
+    """Reward an exact year match strongly, a nearby year weakly, else nothing."""
+    if not car.year.isdigit():
+        return 0.0
+    target = int(car.year)
+    years = [int(y) for y in re.findall(r"(?:19|20)\d{2}", title)]
+    if not years:
+        return 0.0
+    nearest = min(abs(y - target) for y in years)
+    if nearest == 0:
+        return 0.3
+    if nearest <= _YEAR_TOLERANCE:
+        return 0.1
+    return 0.0
+
+
 def _score(car: Car, c: Candidate, kind: ManualKind) -> float:
     score = c.score  # provider relevance (0..1)
     # Archive.org is the only source we can actually download from, so rank ALL
@@ -45,12 +61,16 @@ def _score(car: Car, c: Candidate, kind: ManualKind) -> float:
         score += 1.0
     elif c.source == "manualslib":
         score += 0.1
-    if car.year and car.year in c.title:
-        score += 0.15
+    score += _year_score(car, c.title)
     if "manual" in c.title.lower():
         score += 0.1
-    if kind != "unknown":
-        score += 0.1
+    # Prefer owner's manuals — fluids, oil type, maintenance intervals and
+    # warning-light explanations live there; workshop/service manuals are a
+    # useful but secondary source.
+    if kind == "owner":
+        score += 0.2
+    elif kind == "workshop":
+        score += 0.05
     return score
 
 

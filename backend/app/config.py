@@ -39,6 +39,12 @@ class Settings(BaseSettings):
     # Phase 2.4 — document processing
     chunk_size: int = 1000
     chunk_overlap: int = 150
+    # Quality gate for agent-fetched PDFs: a real manual is large, so anything
+    # below BOTH thresholds is treated as a stub/landing page (e.g. a 1-page
+    # Archive.org catalog entry) and dropped before it can pollute retrieval.
+    # User uploads bypass this gate.
+    min_manual_pages: int = 10
+    min_manual_chars: int = 20000
     # Phase 2.5 — embeddings / vector store (Gemini embeddings, free, same key)
     chroma_dir: str = "./.chroma"
     embedding_model: str = "models/gemini-embedding-001"

@@ -11,6 +11,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from app.agent.state import Car
+from app.config import get_settings
 from app.rag.chunk import chunk_pages
 from app.rag.extract import extract_pages
 from app.rag.models import Chunk, ManualSummary
@@ -31,6 +32,13 @@ def process_pdf_file(
     return chunks, summary
 
 
+def _is_substantial(pages: list, total_chars: int) -> bool:
+    """A real manual is large; stub/landing-page PDFs are tiny. Require both a
+    minimum page count and a minimum amount of extractable text."""
+    s = get_settings()
+    return len(pages) >= s.min_manual_pages and total_chars >= s.min_manual_chars
+
+
 def process_manuals(
     car: Car, fetched: list[dict]
 ) -> tuple[list[Chunk], list[ManualSummary]]:
@@ -43,6 +51,12 @@ def process_manuals(
             continue  # no real file → skip (never fabricate one)
 
         pages = extract_pages(fm.path)
+        total_chars = sum(len(p.text) for p in pages)
+        # Quality gate — discard stub/landing-page or scanned-but-empty PDFs so
+        # their non-manual text never reaches the index. Uploads skip this path.
+        if not _is_substantial(pages, total_chars):
+            continue
+
         chunks = chunk_pages(
             pages,
             car_id=car.id,

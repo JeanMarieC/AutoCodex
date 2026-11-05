@@ -1,0 +1,17 @@
+# Files here are NEVER copied into the image. Keeps the build fast and the image
+# clean — this is all local state, secrets, or things rebuilt in the container.
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.data/
+.chroma/
+*.db
+*.sqlite3
+.env
+.env.*
+!.env.example
+tests/
+eval/
